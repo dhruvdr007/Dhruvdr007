@@ -68,8 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 5. THREE.JS 3D BACKGROUND SCENE ---
   // ==========================================
   const canvasContainer = document.getElementById('canvas-container');
-  
+
+  // BUG FIX 5: Guard against WebGL/Three.js failures (old devices, disabled
+  // WebGL, blocked CDN) so a failure here can't take the rest of the page down.
   if (typeof THREE !== 'undefined' && canvasContainer) {
+   try {
     // Scene setup
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x030508, 0.001);
@@ -157,5 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+   } catch (err) {
+     // WebGL unsupported/blocked — fail silently, rest of the site still works.
+     console.warn('3D background disabled:', err);
+     canvasContainer.style.display = 'none';
+   }
   }
 });
